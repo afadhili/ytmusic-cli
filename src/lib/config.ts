@@ -1,0 +1,74 @@
+import fs from "fs";
+import path from "path";
+import os, { homedir } from "os";
+import { fileURLToPath } from "url";
+
+export type PlayerConfig = {
+    socketPath: string;
+    cacheDir: string;
+    dbLocation: string;
+    migrationDir: string;
+
+    mpvBinary: string;
+    ytdlpBinary: string;
+
+    audioFormat: "opus" | "mp3" | "m4a" | "flac";
+
+    seekSeconds: number,
+    downloadOnPlay: boolean;
+};
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
+
+export const DEFAULT_CONFIG: PlayerConfig = {
+    cacheDir: path.join(os.homedir(), "Music", "ytmusic-cli"),
+    migrationDir: path.join(PROJECT_ROOT, "migrations"),
+    dbLocation: path.join(PROJECT_ROOT, ".database.db"),
+
+    socketPath: "/tmp/my-mpv-socket",
+    mpvBinary: "mpv",
+    ytdlpBinary: "yt-dlp",
+    audioFormat: "opus",
+    seekSeconds: 5,
+    downloadOnPlay: true,
+};
+
+export const CONFIG_DIR = path.join(os.homedir(), ".config", "ytmusic-cli");
+export const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
+
+export function loadConfig(): PlayerConfig {
+    if (!fs.existsSync(CONFIG_PATH)) {
+        return DEFAULT_CONFIG;
+    }
+
+    try {
+        const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
+        const parsed = JSON.parse(raw) as Partial<PlayerConfig>;
+
+        return {
+            ...DEFAULT_CONFIG,
+            ...parsed,
+        };
+    } catch {
+        return DEFAULT_CONFIG;
+    }
+}
+
+export function saveConfig(config: PlayerConfig) {
+    if (!fs.existsSync(CONFIG_DIR)) {
+        fs.mkdirSync(CONFIG_DIR, { recursive: true });
+    }
+
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+}
+
+export function expandPath(p: string): string {
+    return p.replace(/^~/, homedir());
+}
+
+export function resetConfig() {
+    saveConfig(DEFAULT_CONFIG);
+}

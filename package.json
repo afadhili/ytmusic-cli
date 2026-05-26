@@ -1,0 +1,58 @@
+{
+  "name": "@afadhili/ytmusic-cli",
+  "version": "0.1.0",
+  "description": "Terminal-based YouTube Music player with mpv, yt-dlp, SQLite, playlists, lyrics, and ASCII cover previews.",
+  "type": "module",
+  "bin": {
+    "ytmusic-cli": "./dist/app.js"
+  },
+  "files": [
+    "dist",
+    "migrations",
+    "README.md",
+    "LICENSE"
+  ],
+  "homepage": "https://github.com/afadhili/ytmusic-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afadhili/ytmusic-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/afadhili/ytmusic-cli/issues"
+  },
+  "scripts": {
+    "dev": "tsx src/app.tsx",
+    "build": "tsc && shx mkdir -p dist/assets && shx cp -r src/assets/* dist/assets/ && shx chmod +x dist/app.js",
+    "start": "node dist/app.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "youtube-music",
+    "cli",
+    "terminal",
+    "mpv",
+    "yt-dlp",
+    "music-player"
+  ],
+  "author": "afadhili",
+  "license": "MIT",
+  "dependencies": {
+    "@inkjs/ui": "^2.0.0",
+    "better-sqlite3": "^12.10.0",
+    "drizzle-orm": "^0.45.2",
+    "ink": "^7.0.4",
+    "react": "^19.2.6",
+    "sharp": "^0.34.5",
+    "ytmusic-api": "^5.3.1",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
+    "drizzle-kit": "^0.31.10",
+    "shx": "^0.4.0",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}

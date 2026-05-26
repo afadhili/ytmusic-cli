@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.cjs
+
+# Build output
+dist/
+build/
+out/
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Runtime cache / local data
+.cache/
+tmp/
+temp/
+*.tmp
+
+# SQLite / local database
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+data/
+database/
+
+# Drizzle generated local snapshots if you don't want to commit migrations
+# drizzle/
+# migrations/
+
+# Keep this uncommented if migrations are runtime-generated locally
+.config/
+ytmusic-cli/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Media cache
+*.opus
+*.mp3
+*.m4a
+*.flac
+*.wav
+*.webm
+*.part
+
+# Debug
+debug.log
+.npmrc
