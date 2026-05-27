@@ -29,10 +29,13 @@ Terminal-based YouTube Music player built with Ink, mpv, yt-dlp, SQLite, and Dri
 
 ## Requirements
 
-This app require mpv & yt-dlp to use every feature it has, if you don't have yt-dlp you can still use it, but u wouldn't be able to download music
+This app requires mpv, yt-dlp, and socat to use all features. You can still run without yt-dlp (stream-only mode) or socat (limited IPC features), but mpv is essential.
 
-- [mpv](https://mpv.io/) - Media player for audio playback
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube audio extraction
+- [mpv](https://mpv.io/) - Media player for audio playback (required)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube audio extraction (recommended)
+  - **Why:** Enables local caching of tracks, better offline support, and fallback audio format support when streaming fails
+- [socat](http://www.dest-unreach.org/socat/) - Socket communication utility (recommended)
+  - **Why:** Required for reliable mpv IPC communication, property queries, and advanced error diagnostics
 
 ### Installing Requirements
 
@@ -41,10 +44,10 @@ This app require mpv & yt-dlp to use every feature it has, if you don't have yt-
 
 ```bash
 # With Scoop
-scoop install mpv yt-dlp
+scoop install mpv yt-dlp socat
 
 # With Chocolatey
-choco install mpv yt-dlp
+choco install mpv yt-dlp socat
 ```
 
 </details>
@@ -53,7 +56,7 @@ choco install mpv yt-dlp
 <summary><b>macOS</b></summary>
 
 ```bash
-brew install mpv yt-dlp
+brew install mpv yt-dlp socat
 ```
 
 </details>
@@ -63,14 +66,14 @@ brew install mpv yt-dlp
 
 ```bash
 # Ubuntu/Debian
-sudo apt install mpv
+sudo apt install mpv socat
 pip install yt-dlp
 
 # Arch Linux (btw)
-sudo pacman -S mpv yt-dlp
+sudo pacman -S mpv yt-dlp socat
 
 # Fedora
-sudo dnf install mpv yt-dlp
+sudo dnf install mpv yt-dlp socat
 ```
 
 </details>

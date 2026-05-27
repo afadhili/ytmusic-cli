@@ -1,10 +1,10 @@
 import YTMusic from "ytmusic-api";
-import { CONFIG_DIR, CONFIG_PATH, expandPath, loadConfig } from "../lib/config.js";
+import { CONFIG_PATH, expandPath, loadConfig } from "../lib/config.js";
 import { SongDetails, Track, UpNextRuntime } from "../types/yt-music.types.js";
 import { getThumbnail } from "../lib/get-thumbnail.js";
 import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { spawn } from "node:child_process";
-import path, { join } from "node:path";
+import { join } from "node:path";
 import useAppStore from "../app.store.js";
 import { mpvCommand, waitForSocket } from "./mpv.js";
 import { addHistory } from "./history.js";
@@ -12,6 +12,34 @@ import { debugLog } from "../lib/debug-log.js";
 
 const config = loadConfig();
 const CACHE_DIR = expandPath(config.cacheDir) ?? expandPath("~/Music");
+
+const AUDIO_FORMATS: Array<"opus" | "mp3" | "m4a" | "flac"> = ["opus", "mp3", "m4a", "flac"];
+
+export function getAudioFormatFallbackChain(): Array<"opus" | "mp3" | "m4a" | "flac"> {
+    const config = loadConfig();
+    const primaryFormat = config.audioFormat;
+    const customFallbacks = (config.audioFormatFallback ?? []) as Array<"opus" | "mp3" | "m4a" | "flac">;
+
+    const chain: Array<"opus" | "mp3" | "m4a" | "flac"> = [primaryFormat];
+
+    for (const format of customFallbacks) {
+        if (!chain.includes(format)) {
+            chain.push(format);
+        }
+    }
+
+    for (const format of AUDIO_FORMATS) {
+        if (!chain.includes(format)) {
+            chain.push(format);
+        }
+    }
+
+    return chain;
+}
+
+function getMusicPathWithFormat(track: Track, format: string): string {
+    return join(CACHE_DIR, `${track.videoId}.${format}`);
+}
 export function getCookie(): string | undefined {
     const config = loadConfig();
 
@@ -147,7 +175,18 @@ export function getTrackUrl(track: Track): string {
 }
 
 export function getMusicPath(track: Track): string {
-    return join(CACHE_DIR, `${track.videoId}.${config.audioFormat}`)
+    const config = loadConfig();
+    return getMusicPathWithFormat(track, config.audioFormat);
+}
+
+function getCachedMusicPath(track: Track): string | null {
+    for (const format of AUDIO_FORMATS) {
+        const path = getMusicPathWithFormat(track, format);
+        if (fileExists(path)) {
+            return path;
+        }
+    }
+    return null;
 }
 
 function fileExists(filePath: string): boolean {
@@ -156,83 +195,133 @@ function fileExists(filePath: string): boolean {
 
 function downloadMusic(track: Track): void {
     const config = loadConfig();
+    const formatChain = getAudioFormatFallbackChain();
 
-    mkdirSync(config.cacheDir, { recursive: true });
+    mkdirSync(CACHE_DIR, { recursive: true });
 
-    const localPath = getMusicPath(track);
-
-    if (fileExists(localPath)) return;
-    if (downloading.has(track.videoId)) return;
-
-    downloading.add(track.videoId);
-
-    const ytDlp = spawn(
-        config.ytdlpBinary ?? "yt-dlp",
-        [
-            "--no-playlist",
-            "-f",
-            "bestaudio",
-            "-x",
-            "--audio-format",
-            config.audioFormat,
-            "--audio-quality",
-            "0",
-            "--embed-metadata",
-            "-o",
-            join(config.cacheDir, "%(id)s.%(ext)s"),
-            getTrackUrl(track),
-        ],
-        {
-            detached: false,
-            stdio: "ignore",
-        },
-    );
-
-    ytDlp.on("close", (code) => {
-        downloading.delete(track.videoId);
-
-        if (code !== 0) {
-            debugLog(`Download failed: ${track.name}, code: ${code}`);
+    const attemptDownload = (formatIndex: number) => {
+        if (formatIndex >= formatChain.length) {
+            debugLog(`Download exhausted all formats for: ${track.name}`);
             return;
         }
 
-        if (!fileExists(localPath)) {
-            debugLog(`Downloaded file not found: ${localPath}`);
+        const format = formatChain[formatIndex];
+        const localPath = getMusicPathWithFormat(track, format);
+
+        if (downloading.has(track.videoId)) return;
+        if (fileExists(localPath)) {
+            debugLog(`Audio already cached in ${format} format: ${track.name}`);
             return;
         }
 
-        // console.log(`Downloaded: ${track.name}`);
-    });
+        downloading.add(track.videoId);
+        debugLog(`Attempting download in ${format} format: ${track.name}`);
 
-    ytDlp.on("error", (err) => {
-        downloading.delete(track.videoId);
-        debugLog(`yt-dlp error: ${track.name}`, err);
-    });
+        const ytDlp = spawn(
+            config.ytdlpBinary ?? "yt-dlp",
+            [
+                "--no-playlist",
+                "-f",
+                "bestaudio",
+                "-x",
+                "--audio-format",
+                format,
+                "--audio-quality",
+                "0",
+                "--embed-metadata",
+                "-o",
+                join(CACHE_DIR, "%(id)s.%(ext)s"),
+                getTrackUrl(track),
+            ],
+            {
+                detached: false,
+                stdio: ["ignore", "pipe", "pipe"],
+            },
+        );
+
+        let stderrOutput = "";
+
+        if (ytDlp.stderr) {
+            ytDlp.stderr.on("data", (data) => {
+                stderrOutput += data.toString();
+            });
+        }
+
+        ytDlp.on("close", (code) => {
+            downloading.delete(track.videoId);
+
+            if (code !== 0) {
+                const errorMsg = stderrOutput.split("\n").find(line => line.includes("ERROR")) || `code: ${code}`;
+                debugLog(`Download failed in ${format} format: ${track.name} - ${errorMsg}`);
+
+                attemptDownload(formatIndex + 1);
+                return;
+            }
+
+            if (!fileExists(localPath)) {
+                debugLog(`Downloaded file not found in ${format} format: ${localPath}`);
+                attemptDownload(formatIndex + 1);
+                return;
+            }
+
+            debugLog(`Downloaded successfully in ${format} format: ${track.name}`);
+        });
+
+        ytDlp.on("error", (err) => {
+            downloading.delete(track.videoId);
+            debugLog(`yt-dlp error in ${format} format for: ${track.name} - ${err}`);
+            attemptDownload(formatIndex + 1);
+        });
+    };
+
+    attemptDownload(0);
 }
 
 export async function playMusic(track: Track) {
-    mkdirSync(CACHE_DIR, { recursive: true });
+    try {
+        mkdirSync(CACHE_DIR, { recursive: true });
+    } catch (err) {
+        debugLog(`Failed to create cache directory: ${err}`);
+    }
+
     const { tracksType } = useAppStore.getState();
 
-    await waitForSocket();
+    try {
+        await waitForSocket();
+    } catch (err) {
+        debugLog(`Socket error: ${err}`);
+        throw err;
+    }
+
     addHistory(track);
 
-    const localPath = getMusicPath(track);
+    const cachedPath = getCachedMusicPath(track);
 
     if (tracksType === "auto") {
         appendQueueIfNeeded();
     }
 
-    if (existsSync(localPath)) {
-        await mpvCommand(["loadfile", localPath, "replace"]);
-        return;
+    if (cachedPath) {
+        try {
+            debugLog(`Playing cached file: ${cachedPath}`);
+            await mpvCommand(["loadfile", cachedPath, "replace"]);
+            return;
+        } catch (err) {
+            debugLog(`Failed to play cached file: ${err}`);
+        }
     }
 
     if (loadConfig().downloadOnPlay) {
         downloadMusic(track);
     }
 
-    await mpvCommand(["loadfile", getTrackUrl(track), "replace"]);
+    try {
+        debugLog(`Streaming track: ${track.name}`);
+        await mpvCommand(["loadfile", getTrackUrl(track), "replace"]);
+    } catch (err) {
+        debugLog(`Failed to load track: ${err}`);
+        throw err;
+    }
 }
 
 export async function playNext() {
@@ -240,11 +329,18 @@ export async function playNext() {
 
     const nextTrack = tracks[currentIndex + 1];
 
-    if (!nextTrack) return;
+    if (!nextTrack) {
+        debugLog("No next track available");
+        return;
+    }
 
     playNextTrack();
 
-    await playMusic(nextTrack);
+    try {
+        await playMusic(nextTrack);
+    } catch (err) {
+        debugLog(`Failed to play next track: ${err}`);
+    }
 }
 
 export async function playPrev() {
@@ -252,11 +348,18 @@ export async function playPrev() {
 
     const prevTrack = tracks[currentIndex - 1];
 
-    if (!prevTrack) return;
+    if (!prevTrack) {
+        debugLog("No previous track available");
+        return;
+    }
 
     playPrevTrack();
 
-    await playMusic(prevTrack);
+    try {
+        await playMusic(prevTrack);
+    } catch (err) {
+        debugLog(`Failed to play previous track: ${err}`);
+    }
 }
 
 let appendingQueue = false;
@@ -281,7 +384,10 @@ export async function appendQueueIfNeeded() {
     try {
         const nexts = await getNextTracks(lastTrack.videoId);
 
-        if (!nexts || nexts.length === 0) return;
+        if (!nexts || nexts.length === 0) {
+            debugLog("No next tracks found from API");
+            return;
+        }
 
         const existingIds = new Set(tracks.map((track) => track.videoId));
 
@@ -289,11 +395,15 @@ export async function appendQueueIfNeeded() {
             return !existingIds.has(track.videoId);
         });
 
-        if (filteredNexts.length === 0) return;
+        if (filteredNexts.length === 0) {
+            debugLog("All next tracks already in queue");
+            return;
+        }
 
         setTracks([...tracks, ...filteredNexts], currentIndex);
+        debugLog(`Appended ${filteredNexts.length} tracks to queue`);
     } catch (err) {
-        console.error("Failed to append queue:", err);
+        debugLog(`Failed to append queue: ${err}`);
     } finally {
         appendingQueue = false;
     }

@@ -14,6 +14,8 @@ import History from "./screens/history.js";
 import Playlists from "./screens/playlists.js";
 import { ensureDbMigrated } from "./db/index.js";
 import Favorites from "./screens/favorites.js";
+import { loadConfig } from "./lib/config.js";
+import { validateDependencies } from "./lib/system-check.js";
 
 const App = () => {
   const { screen, tab, setTab, setScreen, tracks } = useAppStore();
@@ -26,33 +28,43 @@ const App = () => {
   });
 
   useEffect(() => {
-    startMpv();
+    try {
+      startMpv();
+    } catch (err) {
+      console.error("Failed to start MPV:", err);
+      debugLog(`FATAL: ${err}`);
+      return;
+    }
 
-    waitForSocket().then(() => {
-      listenMpvEvents(async (event) => {
-        if (event.event !== "end-file") return;
+    waitForSocket()
+      .then(() => {
+        listenMpvEvents(async (event) => {
+          if (event.event !== "end-file") return;
 
-        if (event.reason === "eof") {
-          debugLog("Musik berhenti dengan normal");
-          await playNext();
-          return;
-        }
+          if (event.reason === "eof") {
+            debugLog("Track finished normally");
+            await playNext();
+            return;
+          }
 
-        if (event.reason === "stop") {
-          debugLog("Musik distop manual");
-          return;
-        }
+          if (event.reason === "stop") {
+            debugLog("Track manually stopped");
+            return;
+          }
 
-        if (event.reason === "quit") {
-          debugLog("mpv keluar");
-          return;
-        }
+          if (event.reason === "quit") {
+            debugLog("mpv quit");
+            return;
+          }
 
-        if (event.reason === "error") {
-          debugLog("Gagal memutar lagu");
-        }
+          if (event.reason === "error") {
+            debugLog("Track playback error");
+          }
+        });
+      })
+      .catch((err) => {
+        debugLog(`Socket connection failed: ${err}`);
       });
-    });
   }, []);
 
   return (
@@ -84,6 +96,21 @@ const App = () => {
 
 clearLog();
 ensureDbMigrated();
+
+// Validate dependencies before starting the app
+const config = loadConfig();
+const { valid, missing } = validateDependencies(
+  config.mpvBinary,
+  config.ytdlpBinary,
+);
+
+if (!valid) {
+  console.error("ERROR: Missing required dependencies:");
+  missing.forEach((dep) => console.error(`  - ${dep}`));
+  console.error("\nPlease install the missing dependencies and try again.");
+  process.exit(1);
+}
+
 enterFullscreen();
 
 render(<App />);

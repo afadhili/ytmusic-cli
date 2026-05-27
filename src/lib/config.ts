@@ -13,10 +13,13 @@ export type PlayerConfig = {
     ytdlpBinary: string;
 
     audioFormat: "opus" | "mp3" | "m4a" | "flac";
+    audioFormatFallback: ("opus" | "mp3" | "m4a" | "flac")[];
 
     customCookiesPath: string,
     seekSeconds: number,
     downloadOnPlay: boolean;
+    audioOutputDevice?: string;
+    socketTimeout?: number;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,8 +38,11 @@ export const DEFAULT_CONFIG: PlayerConfig = {
     mpvBinary: "mpv",
     ytdlpBinary: "yt-dlp",
     audioFormat: "opus",
+    audioFormatFallback: ["mp3", "m4a", "flac"],
     seekSeconds: 5,
     downloadOnPlay: true,
+    audioOutputDevice: undefined,
+    socketTimeout: 10000,
 };
 
 export const CONFIG_DIR = path.join(os.homedir(), ".config", "ytmusic-cli");
