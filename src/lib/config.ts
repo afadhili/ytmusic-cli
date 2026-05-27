@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 import os, { homedir } from "os";
 import { fileURLToPath } from "url";
-import { checkBinary } from "./binary-check.js";
-import useAppStore from "../app.store.js";
 
 export type PlayerConfig = {
     socketPath: string;
