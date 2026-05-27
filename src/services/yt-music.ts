@@ -1,5 +1,5 @@
 import YTMusic from "ytmusic-api";
-import { expandPath, loadConfig } from "../lib/config.js";
+import { CONFIG_DIR, CONFIG_PATH, expandPath, loadConfig } from "../lib/config.js";
 import { SongDetails, Track, UpNextRuntime } from "../types/yt-music.types.js";
 import { getThumbnail } from "../lib/get-thumbnail.js";
 import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
@@ -12,10 +12,29 @@ import { debugLog } from "../lib/debug-log.js";
 
 const config = loadConfig();
 const CACHE_DIR = expandPath(config.cacheDir) ?? expandPath("~/Music");
+export function getCookie(): string | undefined {
+    const config = loadConfig();
 
-const getCookie = async () => {
-    const cookiePath = path.resolve(process.cwd(), "cookies.txt");
+    if (!config.customCookiesPath) {
+        return undefined;
+    }
+
+    const cookiePath = expandPath(config.customCookiesPath);
+
+    if (!existsSync(cookiePath)) {
+        throw new Error(
+            `Cookie file not found: ${cookiePath}\nPlease edit your config file manually: ${CONFIG_PATH}`
+        );
+    }
+
     const cookie = readFileSync(cookiePath, "utf-8").trim();
+
+    if (!cookie) {
+        throw new Error(
+            `Cookie file is empty: ${cookiePath}\nPlease edit your config file manually: ${CONFIG_PATH}`
+        );
+    }
+
     return cookie;
 }
 

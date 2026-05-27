@@ -14,6 +14,7 @@ export type PlayerConfig = {
 
     audioFormat: "opus" | "mp3" | "m4a" | "flac";
 
+    customCookiesPath: string,
     seekSeconds: number,
     downloadOnPlay: boolean;
 };
@@ -28,6 +29,7 @@ export const DEFAULT_CONFIG: PlayerConfig = {
     migrationDir: path.join(PROJECT_ROOT, "migrations"),
     dbLocation: path.join(PROJECT_ROOT, ".database.db"),
 
+    customCookiesPath: "",
     socketPath: "/tmp/my-mpv-socket",
     mpvBinary: "mpv",
     ytdlpBinary: "yt-dlp",

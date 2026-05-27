@@ -65,6 +65,13 @@ const SETTINGS: SettingItem[] = [
     key: "downloadOnPlay",
     type: "boolean",
   },
+  {
+    label: "󱛔 Custom cookies path",
+    key: "customCookiesPath",
+    type: "text",
+    description:
+      "Path to your custom cookies, eg: ~/.config/ytmusic-cli/cookies.txt, needs to have `name=value;` format",
+  },
 ];
 
 function formatValue(
@@ -235,9 +242,15 @@ export function Settings({ onBack }: Props) {
     return (
       <Box flexDirection="column">
         <Text bold>Set {selectedSetting.label}</Text>
-        <Text dimColor>
-          Current: {String(config[selectedSetting.key as keyof PlayerConfig])}
-        </Text>
+        {selectedSetting.description && (
+          <Text dimColor>{selectedSetting.description}</Text>
+        )}
+        <Box marginTop={1}>
+          <Text dimColor>
+            Current value:{" "}
+            {String(config[selectedSetting.key as keyof PlayerConfig])}
+          </Text>
+        </Box>
 
         <Box marginTop={1}>
           <Text>{"> "}</Text>

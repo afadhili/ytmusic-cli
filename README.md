@@ -66,7 +66,7 @@ brew install mpv yt-dlp
 sudo apt install mpv
 pip install yt-dlp
 
-# Arch Linux
+# Arch Linux (btw)
 sudo pacman -S mpv yt-dlp
 
 # Fedora
