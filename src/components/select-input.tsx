@@ -38,7 +38,7 @@ export default function SelectInput<T = string>({
   focused = true,
   title,
   wrap = "truncate",
-  itemsPerPage = 10,
+  itemsPerPage = 7,
   indicator = "▶ ",
   showNumber = false,
   loop = true,

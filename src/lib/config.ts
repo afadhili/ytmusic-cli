@@ -34,7 +34,7 @@ export const DEFAULT_CONFIG: PlayerConfig = {
     dbLocation: path.join(DATA_DIR, ".database.db"),
 
     customCookiesPath: "",
-    socketPath: "/tmp/my-mpv-socket",
+    socketPath: path.join(DATA_DIR, "ytmusic-mpv-socket"),
     mpvBinary: "mpv",
     ytdlpBinary: "yt-dlp",
     audioFormat: "opus",

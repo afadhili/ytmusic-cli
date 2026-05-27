@@ -1,4 +1,4 @@
-import { Box, Text, useInput } from "ink";
+import { Box, Text, useInput, useStdout } from "ink";
 import { useEffect, useState } from "react";
 import useAppStore from "../app.store.js";
 import SelectInput from "./select-input.js";
@@ -19,6 +19,7 @@ import {
   type PlaylistWithCount,
 } from "../services/playlists.js";
 import { fileURLToPath } from "node:url";
+import { useTerminalSize } from "../hooks/use-terminal-size.js";
 
 export default function PlayingTrack() {
   const {
@@ -32,6 +33,8 @@ export default function PlayingTrack() {
   } = useAppStore();
 
   const { position, duration, paused } = usePlaybackState(500);
+  const { width, height } = useTerminalSize();
+  const isColumn = width * 0.4 < 30;
 
   const [ascii, setAscii] = useState("");
   const [asciiLoading, setAsciiLoading] = useState(false);
@@ -274,37 +277,55 @@ export default function PlayingTrack() {
         flexDirection="column"
         alignItems="center"
       >
-        <Box gap={1} marginTop={1} padding={1} justifyContent="space-between">
+        <Box
+          gap={1}
+          marginTop={1}
+          padding={1}
+          flexDirection={isColumn ? "column" : "row"}
+          justifyContent="space-between"
+        >
           <Box
             flexDirection="column"
             alignItems="center"
             justifyContent="center"
-            width="40%"
+            width={isColumn ? "100%" : "40%"}
+            alignContent="center"
           >
             <Box
               alignItems="center"
               justifyContent="center"
+              width="100%"
               minHeight={ASCII_CONFIG.width * 0.4}
             >
-              <Text dimColor wrap="hard">
-                {ascii ? ascii : ""}
-              </Text>
+              <Box alignItems="center" justifyContent="center" width="100%">
+                <Text dimColor wrap="hard">
+                  {ascii ? ascii : ""}
+                </Text>
+              </Box>
             </Box>
             <Box
               marginTop={1}
               flexDirection="column"
               justifyContent="center"
               alignItems="center"
+              width="100%"
             >
               <Box
                 minWidth={30}
+                width="100%"
                 flexDirection="column"
                 marginBottom={1}
-                marginRight={1}
+                alignItems="center"
+                justifyContent="center"
               >
                 <ProgressBar value={0} />
 
-                <Box alignSelf="center">
+                <Box
+                  marginTop={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  width="100%"
+                >
                   <Text dimColor>
                     {"  "}
                     {formatTime(0)}/{formatTime(0)}
@@ -313,7 +334,7 @@ export default function PlayingTrack() {
               </Box>
             </Box>
           </Box>
-          <Box flexDirection="column" width="60%">
+          <Box flexDirection="column" width={isColumn ? "100%" : "60%"}>
             <Box flexDirection="column" marginBottom={1}>
               <Text bold dimColor>
                 No Track Playing
@@ -339,18 +360,33 @@ export default function PlayingTrack() {
       justifyContent="center"
       alignItems="center"
     >
-      <Box gap={1} marginTop={1} padding={1} justifyContent="space-between">
+      <Box
+        gap={1}
+        marginTop={1}
+        padding={1}
+        flexDirection={isColumn ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Box
           flexDirection="column"
           alignItems="center"
           justifyContent="center"
-          width="40%"
+          alignContent="center"
+          width={isColumn ? "100%" : "40%"}
         >
-          <Box minHeight={ASCII_CONFIG.width * 0.4}>
+          <Box
+            minHeight={ASCII_CONFIG.width * 0.4}
+            width="100%"
+            alignItems="center"
+            justifyContent="center"
+          >
             {asciiLoading ? (
               <Text dimColor>Loading cover...</Text>
             ) : ascii ? (
-              <Text wrap="hard">{ascii}</Text>
+              <Box alignItems="center" justifyContent="center" width="100%">
+                <Text wrap="hard">{ascii}</Text>
+              </Box>
             ) : (
               <Text dimColor>No cover</Text>
             )}
@@ -361,16 +397,24 @@ export default function PlayingTrack() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
+            width="100%"
           >
             <Box
               minWidth={30}
+              width="100%"
               flexDirection="column"
               marginBottom={1}
-              marginRight={1}
+              alignItems="center"
+              justifyContent="center"
             >
               <ProgressBar value={percent} />
 
-              <Box alignSelf="center">
+              <Box
+                marginTop={1}
+                alignItems="center"
+                justifyContent="center"
+                width="100%"
+              >
                 <Text dimColor>
                   {paused ? "  " : "  "}
                   {formatTime(position)}/{formatTime(duration)}
@@ -387,7 +431,7 @@ export default function PlayingTrack() {
         </Box>
 
         {mode === "list" && (
-          <Box flexDirection="column" width="60%">
+          <Box flexDirection="column" width={isColumn ? "100%" : "60%"}>
             <Box flexDirection="column" marginBottom={1}>
               <Text bold>Now Playing</Text>
               <Text dimColor>
@@ -453,7 +497,7 @@ export default function PlayingTrack() {
         )}
 
         {mode === "addtoplaylist" && (
-          <Box flexDirection="column" width="60%">
+          <Box flexDirection="column" width={isColumn ? "100%" : "60%"}>
             <Text bold>Add to playlist</Text>
 
             <Text dimColor>

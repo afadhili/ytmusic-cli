@@ -40,11 +40,6 @@ const SETTINGS: SettingItem[] = [
     type: "text",
   },
   {
-    label: "󰌘 Socket path",
-    key: "socketPath",
-    type: "text",
-  },
-  {
     label: "󰉋 Cache directory",
     key: "cacheDir",
     type: "text",
