@@ -45,6 +45,10 @@ export const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
 export function loadConfig(): PlayerConfig {
     let config: PlayerConfig;
 
+    if (!fs.existsSync(CONFIG_DIR)) {
+        fs.mkdirSync(CONFIG_DIR, { recursive: true });
+    }
+
     if (!fs.existsSync(CONFIG_PATH)) {
         config = DEFAULT_CONFIG;
     } else {

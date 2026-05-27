@@ -49,7 +49,7 @@ type MpvEvent = {
     reason?: string;
 };
 
-export function waitForSocket(timeout = 3000): Promise<void> {
+export function waitForSocket(timeout = 10000): Promise<void> {
     const SOCKET_PATH = loadConfig().socketPath
     return new Promise((resolve, reject) => {
         const startedAt = Date.now();
