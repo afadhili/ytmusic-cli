@@ -27,18 +27,53 @@ Terminal-based YouTube Music player built with Ink, mpv, yt-dlp, SQLite, and Dri
 
 ![Playlists Page](./screenshots/playlist-page.png)
 
-### Settings
-
-![Settings Page](./screenshots/settings.png)
-
 ## Requirements
 
-Install required system packages:
-if youre using arch
+This app require mpv & yt-dlp to use every feature it has, if you don't have yt-dlp you can still use it, but u wouldn't be able to download music
+
+- [mpv](https://mpv.io/) - Media player for audio playback
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube audio extraction
+
+### Installing Requirements
+
+<details>
+<summary><b>Windows</b></summary>
 
 ```bash
-sudo pacman -S mpv yt-dlp
+# With Scoop
+scoop install mpv yt-dlp
+
+# With Chocolatey
+choco install mpv yt-dlp
 ```
+
+</details>
+
+<details>
+<summary><b>macOS</b></summary>
+
+```bash
+brew install mpv yt-dlp
+```
+
+</details>
+
+<details>
+<summary><b>Linux</b></summary>
+
+```bash
+# Ubuntu/Debian
+sudo apt install mpv
+pip install yt-dlp
+
+# Arch Linux
+sudo pacman -S mpv yt-dlp
+
+# Fedora
+sudo dnf install mpv yt-dlp
+```
+
+</details>
 
 ## Installation
 
@@ -87,15 +122,6 @@ Run built version:
 npm start
 ```
 
-Link globally for local testing:
-
-```bash
-npm link
-ytmusic-cli
-```
-
 ## Notes
 
 This app uses `mpv` for playback and `yt-dlp` for downloading/caching tracks.
-
-Do not expose local API or IPC sockets to the public internet.

@@ -286,7 +286,9 @@ export default function PlayingTrack() {
               justifyContent="center"
               minHeight={ASCII_CONFIG.width * 0.4}
             >
-              <Text dimColor>{ascii ? ascii : ""}</Text>
+              <Text dimColor wrap="hard">
+                {ascii ? ascii : ""}
+              </Text>
             </Box>
             <Box
               marginTop={1}
@@ -348,7 +350,7 @@ export default function PlayingTrack() {
             {asciiLoading ? (
               <Text dimColor>Loading cover...</Text>
             ) : ascii ? (
-              <Text>{ascii}</Text>
+              <Text wrap="hard">{ascii}</Text>
             ) : (
               <Text dimColor>No cover</Text>
             )}

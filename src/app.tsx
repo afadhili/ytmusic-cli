@@ -57,7 +57,12 @@ const App = () => {
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Box alignSelf="center">
+      <Box
+        alignSelf="center"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+      >
         <Text bold color="cyan">
           YT Music CLI
         </Text>

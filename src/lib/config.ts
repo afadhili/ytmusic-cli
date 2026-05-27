@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import os, { homedir } from "os";
 import { fileURLToPath } from "url";
+import { checkBinary } from "./binary-check.js";
+import useAppStore from "../app.store.js";
 
 export type PlayerConfig = {
     socketPath: string;
@@ -40,21 +42,25 @@ export const CONFIG_DIR = path.join(os.homedir(), ".config", "ytmusic-cli");
 export const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
 
 export function loadConfig(): PlayerConfig {
+    let config: PlayerConfig;
+
     if (!fs.existsSync(CONFIG_PATH)) {
-        return DEFAULT_CONFIG;
+        config = DEFAULT_CONFIG;
+    } else {
+        try {
+            const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
+            const parsed = JSON.parse(raw) as Partial<PlayerConfig>;
+
+            config = {
+                ...DEFAULT_CONFIG,
+                ...parsed,
+            };
+        } catch {
+            config = DEFAULT_CONFIG;
+        }
     }
 
-    try {
-        const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
-        const parsed = JSON.parse(raw) as Partial<PlayerConfig>;
-
-        return {
-            ...DEFAULT_CONFIG,
-            ...parsed,
-        };
-    } catch {
-        return DEFAULT_CONFIG;
-    }
+    return config;
 }
 
 export function saveConfig(config: PlayerConfig) {

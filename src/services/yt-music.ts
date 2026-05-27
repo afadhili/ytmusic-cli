@@ -2,9 +2,9 @@ import YTMusic from "ytmusic-api";
 import { expandPath, loadConfig } from "../lib/config.js";
 import { SongDetails, Track, UpNextRuntime } from "../types/yt-music.types.js";
 import { getThumbnail } from "../lib/get-thumbnail.js";
-import { existsSync, mkdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { spawn } from "node:child_process";
-import { join } from "node:path";
+import path, { join } from "node:path";
 import useAppStore from "../app.store.js";
 import { mpvCommand, waitForSocket } from "./mpv.js";
 import { addHistory } from "./history.js";
@@ -13,8 +13,18 @@ import { debugLog } from "../lib/debug-log.js";
 const config = loadConfig();
 const CACHE_DIR = expandPath(config.cacheDir) ?? expandPath("~/Music");
 
+const getCookie = async () => {
+    const cookiePath = path.resolve(process.cwd(), "cookies.txt");
+    const cookie = readFileSync(cookiePath, "utf-8").trim();
+    return cookie;
+}
+
+const cookie = await getCookie()
+
 const ytmusic = new YTMusic();
-await ytmusic.initialize();
+await ytmusic.initialize({
+    cookies: cookie ? cookie : undefined
+});
 
 const downloading = new Set<string>();
 

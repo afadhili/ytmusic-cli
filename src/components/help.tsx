@@ -12,7 +12,7 @@ export default function Help({ items, ...props }: HelpProps) {
     return <></>;
   }
   return (
-    <Box gap={2} {...props}>
+    <Box columnGap={2} flexWrap="wrap" justifyContent="center" {...props}>
       {items.length > 0 &&
         items.map((item, index) => (
           <Box gap={1} key={`${item[0]}-${index}`}>

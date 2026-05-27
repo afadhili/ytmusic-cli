@@ -6,13 +6,15 @@ import { quit } from "../lib/enter-screen.js";
 
 export default function Home() {
   const { setScreen, tab } = useAppStore();
-  const { exit } = useApp();
 
   useInput((input, key) => {
-    if (input === "q") exit();
+    if (input === "q") quit();
   });
 
-  const helpList: HelpItems = [["󰌑", "Select"]];
+  const helpList: HelpItems = [
+    ["󰌑", "Select"],
+    ["q", "Quit"],
+  ];
 
   const items = [
     {
@@ -35,6 +37,10 @@ export default function Home() {
       label: " Settings",
       value: "settings",
     },
+    {
+      label: "󰩈 Quit",
+      value: "quit",
+    },
   ];
 
   return (
@@ -43,6 +49,8 @@ export default function Home() {
         <SelectInput
           items={items}
           onSelect={(item) => {
+            if (item.value === "quit") quit();
+
             setScreen(item.value as Screen);
           }}
           focused={tab === "home"}

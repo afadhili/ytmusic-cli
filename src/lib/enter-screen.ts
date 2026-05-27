@@ -7,9 +7,8 @@ export function enterFullscreen(): void {
 }
 
 export function quit(): void {
-    stopMpv();
     exitFullscreen();
-    process.exit(0);
+    stopMpv().then(() => process.exit());
 }
 
 export function exitFullscreen(): void {
