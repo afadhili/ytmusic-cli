@@ -1,6 +1,6 @@
 {
   "name": "@afadhili/ytmusic-cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Terminal-based YouTube Music player with mpv, yt-dlp, SQLite, playlists, lyrics, and ASCII cover previews.",
   "type": "module",
   "bin": {
