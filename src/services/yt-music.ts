@@ -38,11 +38,11 @@ export function getCookie(): string | undefined {
     return cookie;
 }
 
-const cookie = await getCookie()
+const cookie = getCookie()
 
 const ytmusic = new YTMusic();
 await ytmusic.initialize({
-    cookies: cookie ? cookie : undefined
+    cookies: cookie
 });
 
 const downloading = new Set<string>();

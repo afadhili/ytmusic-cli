@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { dirname } from "path";
-import { mkdirSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 
@@ -9,14 +9,18 @@ import { expandPath, loadConfig } from "../lib/config.js";
 
 const config = loadConfig();
 
-const DB_PATH =
-    expandPath(config.dbLocation);
+const dbPath = expandPath(config.dbLocation);
+const dbDir = dirname(dbPath);
 
 const MIGRATION_DIR = expandPath(config.migrationDir);
 
-mkdirSync(dirname(DB_PATH), { recursive: true });
+if (!existsSync(dbDir)) {
+    mkdirSync(dbDir, { recursive: true });
+}
 
-const sqlite = new Database(DB_PATH);
+mkdirSync(dirname(dbPath), { recursive: true });
+
+const sqlite = new Database(dbPath);
 
 export const db = drizzle(sqlite, { schema });
 

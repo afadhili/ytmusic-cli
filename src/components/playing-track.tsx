@@ -219,7 +219,7 @@ export default function PlayingTrack() {
           ["󱁐", "Pause"],
           ["󰹳", `Skip/Back ${loadConfig().seekSeconds}s`],
           ["b", "Prev"],
-          ["n", "Skip"],
+          ["n", "Next"],
           ["u", "Move up"],
           ["j", "Move down"],
           ["a", "Add to playlist"],

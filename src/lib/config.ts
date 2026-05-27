@@ -22,12 +22,13 @@ export type PlayerConfig = {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PROJECT_ROOT = path.resolve(__dirname, "../..");
+export const PROJECT_ROOT = path.resolve(__dirname, "../..");
+export const DATA_DIR = path.join(os.homedir(), ".local", "share", "ytmusic-cli");
 
 export const DEFAULT_CONFIG: PlayerConfig = {
     cacheDir: path.join(os.homedir(), "Music", "ytmusic-cli"),
     migrationDir: path.join(PROJECT_ROOT, "migrations"),
-    dbLocation: path.join(PROJECT_ROOT, ".database.db"),
+    dbLocation: path.join(DATA_DIR, ".database.db"),
 
     customCookiesPath: "",
     socketPath: "/tmp/my-mpv-socket",
